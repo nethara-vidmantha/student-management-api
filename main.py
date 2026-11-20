@@ -27,6 +27,19 @@ students = [
 def get_students():
     return students
 
+@app.get("/students/filter")
+def filter_students(min_age: int | None = None):
+
+    if min_age is None:
+        return students
+
+    filtered_students = []
+
+    for student in students:
+        if student["age"] >= min_age:
+            filtered_students.append(student)
+
+    return filtered_students
 
 @app.get("/students/{student_id}")
 def get_student(student_id: int):
@@ -38,6 +51,7 @@ def get_student(student_id: int):
         status_code=404,
         detail="Student not found"
     )
+
 
 @app.patch("/students/{student_id}")
 def patch_student(student_id: int, student_update: StudentUpdate):
