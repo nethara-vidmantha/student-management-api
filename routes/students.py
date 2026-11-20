@@ -90,6 +90,7 @@ def update_student(
 
     student.name = updated_student.name
     student.age = updated_student.age
+    student.email = updated_student.email
 
     db.commit()
     db.refresh(student)
@@ -124,8 +125,9 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
 def add_student(student: Student, db: Session = Depends(get_db)):
 
     new_student = StudentDB(
-        name=student.name,
-        age=student.age
+    name=student.name,
+    age=student.age,
+    email=student.email
     )
 
     db.add(new_student)
