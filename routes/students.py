@@ -1,100 +1,136 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from models import Student, StudentUpdate
+
+from sqlalchemy.orm import Session
+
+from database import get_db
+from db_models import StudentDB
 
 router = APIRouter()
 
-students = [
-    {"id": 1, "name": "Kamal", "age": 22},
-    {"id": 2, "name": "Nimal", "age": 23},
-    {"id": 3, "name": "Amali", "age": 21}
-]
-
 @router.get("/students")
-def get_students():
+def get_students(db: Session = Depends(get_db)):
+    students = db.query(StudentDB).all()     #this is equals to select*from students;
+
     return students
 
 @router.get("/students/filter")
-def filter_students(min_age: int | None = None):
+def filter_students(
+    min_age: int | None = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(StudentDB)
 
-    if min_age is None:
-        return students
+    if min_age is not None:
+        query = query.filter(StudentDB.age >= min_age)
 
-    filtered_students = []
-
-    for student in students:
-        if student["age"] >= min_age:
-            filtered_students.append(student)
-
-    return filtered_students
+    return query.all()
 
 @router.get("/students/{student_id}")
-def get_student(student_id: int):
-    for student in students:
-        if student["id"] == student_id:
-            return student
+def get_student(student_id: int, db: Session = Depends(get_db)):
 
-    raise HTTPException(
-        status_code=404,
-        detail="Student not found"
-    )
+    student = db.query(StudentDB).filter(
+        StudentDB.id == student_id
+    ).first()
+
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    return student
 
 
 
 @router.patch("/students/{student_id}")
-def patch_student(student_id: int, student_update: StudentUpdate):
-    for student in students:
-        if student["id"] == student_id:
+def patch_student(
+    student_id: int,
+    student_update: StudentUpdate,
+    db: Session = Depends(get_db)
+):
+    student = db.query(StudentDB).filter(
+        StudentDB.id == student_id
+    ).first()
 
-            update_data = student_update.model_dump(exclude_unset=True)
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
 
-            student.update(update_data)
+    update_data = student_update.model_dump(exclude_unset=True)
 
-            return {
-                "message": "Student updated successfully",
-                "student": student
-            }
+    for key, value in update_data.items():
+        setattr(student, key, value)
 
-    raise HTTPException(
-        status_code=404,
-        detail="Student not found"
-    )
+    db.commit()
+    db.refresh(student)
+
+    return {
+        "message": "Student updated successfully",
+        "student": student
+    }
 
 @router.put("/students/{student_id}")
-def update_student(student_id: int, updated_student: Student):
-    for student in students:
-        if student["id"] == student_id:
-            student["name"] = updated_student.name
-            student["age"] = updated_student.age
+def update_student(
+    student_id: int,
+    updated_student: Student,
+    db: Session = Depends(get_db)
+):
+    student = db.query(StudentDB).filter(
+        StudentDB.id == student_id
+    ).first()
 
-            return {
-                "message": "Student updated successfully",
-                "student": student
-            }
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
 
-    return {"message": "Student not found"}
+    student.name = updated_student.name
+    student.age = updated_student.age
+
+    db.commit()
+    db.refresh(student)
+
+    return {
+        "message": "Student updated successfully",
+        "student": student
+    }
 
 @router.delete("/students/{student_id}")
-def delete_student(student_id: int):
-    for student in students:
-        if student["id"] == student_id:
-            students.remove(student)
+def delete_student(student_id: int, db: Session = Depends(get_db)):
 
-            return {
-                "message": "Student deleted successfully"
-            }
+    student = db.query(StudentDB).filter(
+        StudentDB.id == student_id
+    ).first()
 
-    return {"message": "Student not found"}
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    db.delete(student)
+    db.commit()
+
+    return {
+        "message": "Student deleted successfully"
+    }
 
 
 @router.post("/students")
-def add_student(student: Student):
-    new_student = {
-        "id": len(students) + 1,
-        "name": student.name,
-        "age": student.age
-    }
+def add_student(student: Student, db: Session = Depends(get_db)):
 
-    students.append(new_student)
+    new_student = StudentDB(
+        name=student.name,
+        age=student.age
+    )
+
+    db.add(new_student)
+    db.commit()
+    db.refresh(new_student)
 
     return {
         "message": "Student added successfully",
