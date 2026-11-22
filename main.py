@@ -7,8 +7,21 @@ from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends
 from dependencies import get_app_info
+from fastapi.responses import JSONResponse
 
 app = FastAPI()   # Create an instance of the FastAPI class
+
+from dependencies import StudentNotFoundException
+
+@app.exception_handler(StudentNotFoundException)
+async def student_not_found_handler(request, exc):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error": "Student not found",
+            "message": "The requested student does not exist."
+        }
+    )
 
 app.add_middleware(
     CORSMiddleware,

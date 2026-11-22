@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from dependencies import StudentNotFoundException
 from models import Student, StudentUpdate
 from models import Student, StudentUpdate, StudentResponse
 
@@ -35,10 +36,7 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
     ).first()
 
     if student is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Student not found"
-        )
+        raise StudentNotFoundException()
 
     return student
 
