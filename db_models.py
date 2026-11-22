@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from database import Base
 from sqlalchemy import Boolean
 from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 class StudentDB(Base):
     __tablename__ = "students"
@@ -11,6 +12,7 @@ class StudentDB(Base):
     age = Column(Integer, nullable=False)
     email = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("UserDB", back_populates="students")
 
 class UserDB(Base):
     __tablename__ = "users"
@@ -21,3 +23,4 @@ class UserDB(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     role = Column(String, default="student", nullable=False)
+    students = relationship("StudentDB", back_populates="user")
