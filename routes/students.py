@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from models import Student, StudentUpdate
+from models import Student, StudentUpdate, StudentResponse
 
 from sqlalchemy.orm import Session
 
@@ -8,7 +9,7 @@ from db_models import StudentDB
 
 router = APIRouter()
 
-@router.get("/students")
+@router.get("/students", response_model=list[StudentResponse])
 def get_students(db: Session = Depends(get_db)):
     students = db.query(StudentDB).all()     #this is equals to select*from students;
 
@@ -26,7 +27,7 @@ def filter_students(
 
     return query.all()
 
-@router.get("/students/{student_id}")
+@router.get("/students/{student_id}", response_model=StudentResponse)
 def get_student(student_id: int, db: Session = Depends(get_db)):
 
     student = db.query(StudentDB).filter(
@@ -43,7 +44,7 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
 
 
 
-@router.patch("/students/{student_id}")
+@router.patch("/students/{student_id}", response_model=StudentResponse)
 def patch_student(
     student_id: int,
     student_update: StudentUpdate,
@@ -67,12 +68,9 @@ def patch_student(
     db.commit()
     db.refresh(student)
 
-    return {
-        "message": "Student updated successfully",
-        "student": student
-    }
+    return student
 
-@router.put("/students/{student_id}")
+@router.put("/students/{student_id}", response_model=StudentResponse)
 def update_student(
     student_id: int,
     updated_student: Student,
@@ -95,12 +93,12 @@ def update_student(
     db.commit()
     db.refresh(student)
 
-    return {
-        "message": "Student updated successfully",
-        "student": student
-    }
+    return student
 
-@router.delete("/students/{student_id}")
+@router.delete(
+    "/students/{student_id}",
+    status_code=204
+)
 def delete_student(student_id: int, db: Session = Depends(get_db)):
 
     student = db.query(StudentDB).filter(
@@ -116,12 +114,14 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
     db.delete(student)
     db.commit()
 
-    return {
-        "message": "Student deleted successfully"
-    }
+    return None
 
 
-@router.post("/students")
+@router.post(
+    "/students",
+    response_model=StudentResponse,
+    status_code=201
+)
 def add_student(student: Student, db: Session = Depends(get_db)):
 
     new_student = StudentDB(
@@ -134,7 +134,4 @@ def add_student(student: Student, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_student)
 
-    return {
-        "message": "Student added successfully",
-        "student": new_student
-    }
+    return new_student
