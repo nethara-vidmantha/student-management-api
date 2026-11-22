@@ -11,6 +11,8 @@ from db_models import StudentDB
 from dependencies import get_admin_user
 from db_models import StudentDB, UserDB
 
+from fastapi import Query
+
 router = APIRouter()
 
 @router.get("/students", response_model=list[StudentResponse])
@@ -32,6 +34,38 @@ def filter_students(
         query = query.filter(StudentDB.age >= min_age)
 
     return query.all()
+
+@router.get("/students/sort")
+def sort_students(db: Session = Depends(get_db)):
+    students = db.query(StudentDB).order_by(StudentDB.age.asc()).all()
+    return students
+
+@router.get("/students/limited")
+def get_limited_students(db: Session = Depends(get_db)):
+    students = db.query(StudentDB).limit(2).all()
+    return students
+
+@router.get("/students/offset")
+def get_offset_students(db: Session = Depends(get_db)):
+    students = db.query(StudentDB).offset(2).all()
+    return students
+
+@router.get("/students/pagination")
+def get_students_paginated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    offset = (page - 1) * limit
+
+    students = (
+        db.query(StudentDB)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return students
 
 @router.get("/students/{student_id}", response_model=StudentResponse)
 def get_student(student_id: int, db: Session = Depends(get_db)):
