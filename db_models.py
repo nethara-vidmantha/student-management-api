@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from database import Base
 from sqlalchemy import Boolean
+from sqlalchemy import ForeignKey
 
 class StudentDB(Base):
     __tablename__ = "students"
@@ -9,6 +10,7 @@ class StudentDB(Base):
     name = Column(String, nullable=False)
     age = Column(Integer, nullable=False)
     email = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
 class UserDB(Base):
     __tablename__ = "users"

@@ -129,9 +129,10 @@ def delete_student(student_id: int, db: Session = Depends(get_db), current_user 
 def add_student(student: Student, db: Session = Depends(get_db), current_user = Depends(get_admin_user)):
 
     new_student = StudentDB(
-    name=student.name,
-    age=student.age,
-    email=student.email
+        name=student.name,
+        age=student.age,
+        email=student.email,
+        user_id=current_user.id
     )
 
     db.add(new_student)
