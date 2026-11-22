@@ -3,7 +3,23 @@ from routes.students import router as student_router  #import the router from ro
 from database import engine, Base
 from db_models import StudentDB
 
+import time
+from fastapi import Request
+
 app = FastAPI()   # Create an instance of the FastAPI class
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    process_time = time.time() - start_time
+
+    print(f"Request: {request.method} {request.url.path}")
+    print(f"Processing time: {process_time:.4f} seconds")
+
+    return response
 
 Base.metadata.create_all(bind=engine)
 
