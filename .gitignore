@@ -1,2 +1,23 @@
+
+# Environment variables and secrets
 .env
+.env.*
+
+# Python virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Test and coverage files
+.pytest_cache/
+htmlcov/
+.coverage
+
+# IDE and system files
+.vscode/
+.DS_Store
+
+# Personal project notes
 map.md

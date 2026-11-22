@@ -1,7 +1,5 @@
 from fastapi import FastAPI  #import FastAPI class from fastapi module
 from routes.students import router as student_router  #import the router from routes/students.py
-from database import engine, Base
-from db_models import StudentDB
 import time
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,10 +7,9 @@ from fastapi import Depends
 from dependencies import get_app_info
 from fastapi.responses import JSONResponse
 from routes.users import router as user_router
+from dependencies import StudentNotFoundException
 
 app = FastAPI()   # Create an instance of the FastAPI class
-
-from dependencies import StudentNotFoundException
 
 @app.exception_handler(StudentNotFoundException)
 async def student_not_found_handler(request, exc):
@@ -44,8 +41,6 @@ async def log_requests(request: Request, call_next):
     print(f"Processing time: {process_time:.4f} seconds")
 
     return response
-
-Base.metadata.create_all(bind=engine)
 
 app.include_router(student_router)  # Include the student router in the main application
 app.include_router(user_router)
