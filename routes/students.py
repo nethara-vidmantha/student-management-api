@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from db_models import StudentDB
+from dependencies import get_admin_user
 
 router = APIRouter()
 
@@ -49,7 +50,8 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
 def patch_student(
     student_id: int,
     student_update: StudentUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_admin_user)
 ):
     student = db.query(StudentDB).filter(
         StudentDB.id == student_id
@@ -75,7 +77,8 @@ def patch_student(
 def update_student(
     student_id: int,
     updated_student: Student,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_admin_user)
 ):
     student = db.query(StudentDB).filter(
         StudentDB.id == student_id
@@ -100,7 +103,7 @@ def update_student(
     "/students/{student_id}",
     status_code=204
 )
-def delete_student(student_id: int, db: Session = Depends(get_db)):
+def delete_student(student_id: int, db: Session = Depends(get_db), current_user = Depends(get_admin_user)):
 
     student = db.query(StudentDB).filter(
         StudentDB.id == student_id
@@ -123,7 +126,7 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
     response_model=StudentResponse,
     status_code=201
 )
-def add_student(student: Student, db: Session = Depends(get_db)):
+def add_student(student: Student, db: Session = Depends(get_db), current_user = Depends(get_admin_user)):
 
     new_student = StudentDB(
     name=student.name,
