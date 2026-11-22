@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from dependencies import StudentNotFoundException
 from models import Student, StudentUpdate
 from models import Student, StudentUpdate, StudentResponse
+from dependencies import get_current_user
 
 from sqlalchemy.orm import Session
 
@@ -11,9 +12,11 @@ from db_models import StudentDB
 router = APIRouter()
 
 @router.get("/students", response_model=list[StudentResponse])
-def get_students(db: Session = Depends(get_db)):
-    students = db.query(StudentDB).all()     #this is equals to select*from students;
-
+def get_students(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    students = db.query(StudentDB).all()
     return students
 
 @router.get("/students/filter")

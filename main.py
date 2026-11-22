@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends
 from dependencies import get_app_info
 from fastapi.responses import JSONResponse
+from routes.users import router as user_router
 
 app = FastAPI()   # Create an instance of the FastAPI class
 
@@ -47,6 +48,7 @@ async def log_requests(request: Request, call_next):
 Base.metadata.create_all(bind=engine)
 
 app.include_router(student_router)  # Include the student router in the main application
+app.include_router(user_router)
 
 @app.get("/")       # called as decorator, it tells FastAPI that when someone sends GET req to root url /, execute the function below.
 def home():
