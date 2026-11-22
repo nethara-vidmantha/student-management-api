@@ -25,6 +25,17 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
             detail="Username already exists"
         )
 
+    existing_email = db.query(UserDB).filter(
+        UserDB.email == user.email
+    ).first()
+
+    if existing_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+
+
     hashed_password = hash_password(user.password)
 
     new_user = UserDB(

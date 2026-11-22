@@ -169,7 +169,7 @@ def delete_student(student_id: int, db: Session = Depends(get_db), current_user 
 
     db.delete(student)
     db.commit()
-    db.refresh(student)
+    
     return None
 
 
