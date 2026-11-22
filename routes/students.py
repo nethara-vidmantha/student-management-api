@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from db_models import StudentDB
 from dependencies import get_admin_user
+from db_models import StudentDB, UserDB
 
 router = APIRouter()
 
@@ -44,6 +45,23 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
 
     return student
 
+@router.get("/students-with-owners")
+def get_students_with_owners(db: Session = Depends(get_db)):
+
+    results = (
+        db.query(StudentDB, UserDB.username)
+        .join(UserDB, StudentDB.user_id == UserDB.id)
+        .all()
+    )
+
+    return [
+        {
+            "student_name": student.name,
+            "age": student.age,
+            "username": username
+        }
+        for student, username in results
+    ]
 
 
 @router.patch("/students/{student_id}", response_model=StudentResponse)
