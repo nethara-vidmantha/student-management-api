@@ -6,7 +6,17 @@ from db_models import StudentDB
 import time
 from fastapi import Request
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()   # Create an instance of the FastAPI class
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
